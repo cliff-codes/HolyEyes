@@ -14,4 +14,9 @@ public class BlockEntry
         this.DateBlocked = blockedEntry.DateBlocked;
         this.Reason = blockedEntry.Reason;
     }
+
+    public override string ToString()
+    {
+        return $"Domain: {this.Domain}, DateBlocked: {this.DateBlocked}, Reason: {this.Reason}";
+    }
 }
