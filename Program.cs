@@ -9,24 +9,59 @@ class Program
     static void Main(string[] args)
     {
         Console.WriteLine("----holy eyes is watching you----------");
-        bool isRuning = true;       
+        var isRunning = true;
+
         //start application automatically on boot :todo
-        
-        while (isRuning)
+
+        //read /etc/hosts
+        string[] hosts = File.ReadAllLines("/etc/hosts");
+        var blockedHosts = hosts.Where(line => line.Contains("# blocked-by-holyEyes")).ToList();
+        foreach (var host in blockedHosts)
+        {
+            Console.WriteLine(host);
+        }
+
+
+        List<BlockEntry>blockedList = BlockListService.LoadBlockList();
+        while (isRunning)
         {
             //load blocked lists
-            List<BlockEntry>blockedList = BlockListService.LoadBlockList();
             if (blockedList.Count > 0)
             {
-                foreach (var entry in blockedList)
+                //creating new host entries by applying blocking rules
+                var newHostEntries = blockedList.Select(BlockListService.ApplyBlockedHostRules).ToList();
+                
+                //remove old blocked entries
+                var updatedHosts = hosts.Where(line => !line.Contains("# blocked-by-holyEyes")).ToList();
+                
+                //add new entries
+                updatedHosts.AddRange(newHostEntries);
+                
+                //write new hosts
+                try
                 {
-                    Console.WriteLine(entry.ToString());
+                    File.WriteAllLines("/etc/hosts", updatedHosts);
+                    
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    Console.WriteLine("Error: " + e.Message + "");
+                    Console.WriteLine("Please run the application as root");
+                    isRunning = false;
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error: " + e.Message + "");
+                    isRunning = false; 
+                    break;
                 }
             }
             else
             {
                 Console.WriteLine("No blocklist found");
             }
+            Thread.Sleep(60000);
         }
     }
 }

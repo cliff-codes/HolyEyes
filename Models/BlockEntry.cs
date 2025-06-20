@@ -8,6 +8,14 @@ public class BlockEntry
     public string DateBlocked { get; set; }
     public string Reason { get; set; }
 
+    // Add parameterless constructor for JSON deserialization
+    public BlockEntry()
+    {
+        Domain = string.Empty;
+        DateBlocked = string.Empty;
+        Reason = string.Empty;
+    }
+
     public BlockEntry(BlockedEntry blockedEntry)
     {
         this.Domain = blockedEntry.Domain;

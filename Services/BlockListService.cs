@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using HolyEyesApp.Interfaces;
 using HolyEyesApp.Models;
@@ -10,9 +11,11 @@ public class BlockListService
     
     public static List<BlockEntry> LoadBlockList()
     {
-        const string path = "Data/BlockList.json";
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "Data/blocklist.json");
+        
         //read from disk blockedList.json if one exists
         bool exists = File.Exists(path);
+        Console.WriteLine($"File exists: {exists}");
         if (!exists)
         {
             lists = new List<BlockEntry>();
@@ -34,5 +37,10 @@ public class BlockListService
         string json = JsonSerializer.Serialize(lists);
         File.WriteAllText("Data/blocklist.json", json);
         Console.WriteLine($"{entry.Domain} successfully added to the list");
+    }
+
+    public static string ApplyBlockedHostRules(BlockEntry entry)
+    {
+        return $"127.0.0.1 {entry.Domain} # blocked-by-holyEyes";
     }
 }
